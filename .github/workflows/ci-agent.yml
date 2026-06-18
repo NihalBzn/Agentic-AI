@@ -45,4 +45,4 @@ jobs:
         pytest test_agent.py -v --durations=0
       env:
         OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
-        LANGFLOW_API_URL: "http://127.0.0.1:7860/api/v1/run/YOUR_FLOW_ID"
+        LANGFLOW_API_URL: "http://127.0.0.1:7860/api/v1/run/87a0047e-83a1-4244-ab3e-c8df3ca85f0e"
