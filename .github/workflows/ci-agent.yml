@@ -39,10 +39,11 @@ jobs:
         sleep 15 # Laisse le temps à l'instance de démarrer
       env:
         OPENAI_API_KEY: ${{ secrets.APIKEY1 }}
+        L_SKIP_AUTH_AUTO_LOGIN: "true" # <-- Désactive le blocage d'authentification v1.5+
 
     - name: Exécution des 20 tests automatisés (y compris le test DLQ)
       run: |
         pytest test_agent.py -v --durations=0
       env:
         OPENAI_API_KEY: ${{ secrets.APIKEY1 }}
-        LANGFLOW_API_URL: "http://127.0.0.1:7860/api/v1/run/87a0047e-83a1-4244-ab3e-c8df3ca85f0e"
+        L_API_URL: "http://127.0.0.1:7860/api/v1/run/87a0047e-83a1-4244-ab3e-c8df3ca85f0e"
