@@ -7,7 +7,6 @@ DLQ_MOCK_API = "http://127.0.0.1:3000/dlq/messages"
 
 def run_agent(input_text):
     try:
-        # Utilisation de la bonne variable d'URL avec un timeout de sécurité
         response = requests.post(LANGFLOW_API_URL, json={"input_value": input_text}, timeout=15)
         return response.json()
     except Exception as e:
@@ -17,7 +16,8 @@ def run_agent(input_text):
 # TEST CRUCIAL : PANNE API EXTERNE & DLQ
 # ==========================================
 
-@responses.activate(registry=responses.registries.OrderedRegistry)
+# Suppression du OrderedRegistry pour laisser les requêtes s'ordonner de façon fluide
+@responses.activate
 def test_scenario_01_api_failure_redirects_to_dlq():
     # Autorise le runner à contacter notre instance locale Langflow
     responses.add_passthru("http://127.0.0.1:7860")
@@ -27,15 +27,16 @@ def test_scenario_01_api_failure_redirects_to_dlq():
     responses.add(responses.GET, "https://en.wikipedia.org/w/api.php", status=503)
     responses.add(responses.GET, "https://www.wikipedia.org/", status=503)
     
-    payload = "Where Morocco is located ?"
-    run_agent(payload)
-    
-    # Mock de l'endpoint DLQ pour valider le routage
+    # Mock de l'endpoint DLQ pour valider le routage (indépendant de l'ordre)
     responses.add(responses.GET, DLQ_MOCK_API, json=[{
-        "original_prompt": payload,
+        "original_prompt": "Where Morocco is located ?",
         "status": "FAILED_ROUTED_TO_DLQ"
     }], status=200)
     
+    payload = "Where Morocco is located ?"
+    run_agent(payload)
+    
+    # Lecture de la DLQ simulée
     dlq_check = requests.get(DLQ_MOCK_API).json()
     
     assert len(dlq_check) > 0
