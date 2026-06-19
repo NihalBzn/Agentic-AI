@@ -14,13 +14,18 @@ def run_agent(input_text):
 # TEST CRUCIAL : PANNE API EXTERNE & DLQ
 # ==========================================
 
-@responses.activate
+@responses.activate(registry=responses.registries.OrderedRegistry)
 def test_scenario_01_api_failure_redirects_to_dlq():
+    # Ajout explicite du passthrough pour l'API Langflow locale
+    responses.add_passthru("http://localhost:7860")
+    responses.add_passthru("http://127.0.0.1:7860")
+    
+
     # 1. On simule une panne totale de l'API externe que l'agent utilise (ex: Wikipedia / YFinance)
     responses.add(responses.GET, "https://www.wikipedia.org/", status=503)
     
     # 2. On lance l'agent avec une requête qui force l'utilisation de cet outil
-    payload = "Donne-moi le prix de l'action Apple"
+    payload = "Where Morocco is located ?"
     
     # En production, Langflow va trigger le Conditional Router suite au crash du tool 
     # et envoyer les infos au Webhook DLQ. Ici on simule la capture.
