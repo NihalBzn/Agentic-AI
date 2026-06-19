@@ -2,7 +2,7 @@ import pytest
 import requests
 import responses
 
-LA_API_URL = "http://localhost:7860/api/v1/run/87a0047e-83a1-4244-ab3e-c8df3ca85f0e"
+L_API_URL = "http://localhost:7860/api/v1/run/87a0047e-83a1-4244-ab3e-c8df3ca85f0e"
 DLQ_MOCK_API = "http://localhost:3000/dlq/messages" # Simule l'endpoint de votre DLQ
 
 # Configuration globale pour les requêtes à Langflow
