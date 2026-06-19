@@ -2,12 +2,12 @@ import pytest
 import requests
 import responses
 
-LANGFLOW_API_URL = "http://localhost:7860/api/v1/run/87a0047e-83a1-4244-ab3e-c8df3ca85f0e"
+LA_API_URL = "http://localhost:7860/api/v1/run/87a0047e-83a1-4244-ab3e-c8df3ca85f0e"
 DLQ_MOCK_API = "http://localhost:3000/dlq/messages" # Simule l'endpoint de votre DLQ
 
 # Configuration globale pour les requêtes à Langflow
 def run_agent(input_text):
-    response = requests.post(LANGFLOW_API_URL, json={"input_value": input_text})
+    response = requests.post(L_API_URL, json={"input_value": input_text})
     return response.json()
 
 # ==========================================
@@ -17,7 +17,7 @@ def run_agent(input_text):
 @responses.activate
 def test_scenario_01_api_failure_redirects_to_dlq():
     # 1. On simule une panne totale de l'API externe que l'agent utilise (ex: Wikipedia / YFinance)
-    responses.add(responses.GET, "https://query1.finance.yahoo.com/v7/finance/quote", status=503)
+    responses.add(responses.GET, "https://www.wikipedia.org/", status=503)
     
     # 2. On lance l'agent avec une requête qui force l'utilisation de cet outil
     payload = "Donne-moi le prix de l'action Apple"
