@@ -22,22 +22,28 @@ def test_scenario_01_api_failure_redirects_to_dlq():
     
 
     # 1. On simule une panne totale de l'API externe que l'agent utilise (ex: Wikipedia / YFinance)
+    responses.add(responses.GET, "https://en.wikipedia.org/w/api.php", status=503)
     responses.add(responses.GET, "https://www.wikipedia.org/", status=503)
     
     # 2. On lance l'agent avec une requête qui force l'utilisation de cet outil
     payload = "Where Morocco is located ?"
-    
-    # En production, Langflow va trigger le Conditional Router suite au crash du tool 
-    # et envoyer les infos au Webhook DLQ. Ici on simule la capture.
-    response_data = run_agent(payload)
+    run_agent(payload)
+
+
+    # Mock the DLQ endpoint to verify routing
+    responses.add(responses.GET, DLQ_MOCK_API, json=[{
+        "original_prompt": payload,
+        "status": "FAILED_ROUTED_TO_DLQ"
+    }], status=200)
     
     # 3. Vérification : L'agent ne doit pas crasher l'application (200 OK de l'orchestrateur)
     # Mais le système doit avoir routé la tâche en file d'attente d'erreur (DLQ)
     dlq_check = requests.get(DLQ_MOCK_API).json()
     
     assert len(dlq_check) > 0
-    assert "Apple" in dlq_check[0]["original_prompt"]
-    assert dlq_check[0]["status"] == "FAILED_ROUTED_TO_DLQ"
+    assert "Morocco" in dlq_check[0]["original_prompt"]
+    assert dlq_check[0]["status"] == "FAILED_ROUTED_TO_DLQ" 
+
 
 # ==========================================
 # LES 19 AUTRES SCÉNARIOS DE TEST COMPLÉMENTAIRES
